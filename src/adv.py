@@ -1,4 +1,7 @@
 from room import Room
+from player import Player
+import sys
+from termcolor import colored, cprint
 
 # Declare all the rooms
 
@@ -39,6 +42,8 @@ room['treasure'].s_to = room['narrow']
 
 # Make a new player object that is currently in the 'outside' room.
 
+player = Player("Asher", room["outside"])
+
 # Write a loop that:
 #
 # * Prints the current room name
@@ -49,3 +54,56 @@ room['treasure'].s_to = room['narrow']
 # Print an error message if the movement isn't allowed.
 #
 # If the user enters "q", quit the game.
+
+def north():
+  try:
+    player.room = player.room.n_to
+  except AttributeError:
+    cprint("\n** Blocked **", "red")
+
+def south():
+  try:
+    player.room = player.room.s_to
+  except AttributeError:
+    cprint("\n** Blocked **", "red")
+
+def east():
+  try:
+    player.room = player.room.e_to
+  except AttributeError:
+    cprint("\n** Blocked **", "red")
+
+def west():
+  try:
+    player.room = player.room.w_to
+  except AttributeError:
+    cprint("\n** Blocked **", "red")
+
+def list_commands():
+  cprint("\nn (North), s (South), e (East), w (West), q (Quit)", "white", attrs=["bold"])
+
+options = {
+  "n": north,
+  "s": south,
+  "e": east,
+  "w": west,
+  "?": list_commands,
+}
+
+while (True):
+  cprint(f"\n{player.name} is in the {player.room.name}", "blue")
+  print(player.room.description)
+
+  action = input("\nAction: ")
+
+  if (action == "q"):
+    break
+
+  try:
+    options[action]()
+  except KeyError:
+    print("\nInvalid Action: Type ? to get list of actions")
+
+
+
+
