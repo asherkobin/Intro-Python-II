@@ -2,6 +2,7 @@
 # currently.
 
 class Player():
-  def __init__(self, name, room):
+  """ Player """
+  def __init__(self, name, room):  # self not needed
     self.name = name
     self.room = room
