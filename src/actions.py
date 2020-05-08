@@ -112,8 +112,9 @@ class Actions():
     else:
       cprint("\n" + found_item.description, "magenta")
 
-  def use(self, item_name, function, target):
+  def use(self, item_name, function, target_name):
     found_item = None
+    found_target = None
     for item in self.player.items:
       if item.name == item_name:
         found_item = item
@@ -121,4 +122,13 @@ class Actions():
     if (found_item is None):
       cprint("\nYou do not possess a \033[93m" + item_name)
     else:
-      cprint("\nNo Effect", "magenta")
+      for target in self.player.room.targets:
+        if target.name == target_name:
+          found_target = target
+          break
+      if (found_target is None):
+        cprint("\nThis room does not have a \033[93m" + target_name)
+      elif (found_target.item_used_for == found_item.used_for):
+        cprint("\nWorked!", "green")
+      else:
+        cprint("\nNo Effect", "magenta")
