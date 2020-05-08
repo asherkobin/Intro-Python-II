@@ -2,158 +2,24 @@ from item import Item
 from room import Room
 from player import Player
 from termcolor import colored, cprint
+from actions import Actions
+from rooms import rooms
 
 import textwrap
 
-# ITEMS
-
-item = {
-  "rock":
-    Item("rock", "mysterious rune carvings surround the rock")
-}
-
-# ROOMS
-
-room = {
-  "outside":
-    Room(
-      "Outside Cave Entrance",
-      "North of you, the cave mount beckons",
-      [item["rock"]]),
-
-  "foyer":
-    Room(
-      "Foyer",
-      "Dim light filters in from the south. Dusty passages run north and east.",
-      []),
-
-  "overlook":
-    Room(
-      "Grand Overlook",
-      "A steep cliff appears before you, falling into the darkness. Ahead to the north, a light flickers in the distance, but there is no way across the chasm.",
-      []),
-
-  "narrow":
-    Room(
-      "Narrow Passage",
-      "The narrow passage bends here from west to north. The smell of gold permeates the air.",
-      []),
-  
-  "treasure":
-    Room(
-      "Treasure Chamber",
-      "You've found the long-lost treasure chamber! Sadly, it has already been completely emptied by earlier adventurers. The only exit is to the south.",
-      [])
-}
-
-def print_room_description():
-  cprint(f"\nYou are in the {player.room.name}", "green") 
-  cprint(player.room.description, "white")
-
 # Link rooms together
 
-room['outside'].n_to = room['foyer']
-room['foyer'].s_to = room['outside']
-room['foyer'].n_to = room['overlook']
-room['foyer'].e_to = room['narrow']
-room['overlook'].s_to = room['foyer']
-room['narrow'].w_to = room['foyer']
-room['narrow'].n_to = room['treasure']
-room['treasure'].s_to = room['narrow']
+rooms['outside'].n_to = rooms['foyer']
+rooms['foyer'].s_to = rooms['outside']
+rooms['foyer'].n_to = rooms['overlook']
+rooms['foyer'].e_to = rooms['narrow']
+rooms['overlook'].s_to = rooms['foyer']
+rooms['narrow'].w_to = rooms['foyer']
+rooms['narrow'].n_to = rooms['treasure']
+rooms['treasure'].s_to = rooms['narrow']
 
-player = Player("Asher", room["outside"])
-
-def list_commands():
-  cprint("""
-Movement Commands: n (north), s (south), e (east), w (west), q (quit)
-
-Room Commands:
-- look (describe your current location)
-- search (search your current location)
-
-Item Commands:
-- pickup [item_name] (pickup an item that you have found)
-- drop [item_name] (drop an item from your inventory)
-
-Inventory Commands:
-- loot (displays your inventory)
-- inspect [item_name] (inspect an item)
-- use [item_name] (use an item in your)""")
-
-
-def north():
-  try:
-    player.room = player.room.n_to
-    print_room_description()
-  except AttributeError:
-    cprint("\n** Blocked **", "red")
-
-def south():
-  try:
-    player.room = player.room.s_to
-    print_room_description()
-  except AttributeError:
-    cprint("\n** Blocked **", "red")
-
-def east():
-  try:
-    player.room = player.room.e_to
-    print_room_description()
-  except AttributeError:
-    cprint("\n** Blocked **", "red")
-
-def west():
-  try:
-    player.room = player.room.w_to
-    print_room_description()
-  except AttributeError:
-    cprint("\n** Blocked **", "red")
-
-def search():
-  cprint("\nYou search the area and see...", "white")
-  if len(player.room.items) == 0:
-    cprint("\nNothing", "red")
-  else:
-    for item in player.room.items:
-      cprint("- \033[93m" + item.name)
-
-def look():
-  print_room_description()
-
-def pickup(item_name):
-  found_item = None
-  for item in player.room.items:
-    if item.name == item_name:
-      found_item = item
-      break
-  if (found_item is None):
-    cprint("\nThere is no " + item_name + " here.")
-  else:
-    cprint("\nYou picked up the \033[93m" + item_name)
-    player.room.items.remove(item)
-    player.add_item(item)
-
-def drop(item_name):
-  found_item = None
-  for item in player.items:
-    if item.name == item_name:
-      found_item = item
-      break
-  if (found_item is None):
-    cprint("\nYou do not possess a \033[93m" + item_name)
-  else:
-    cprint("\nYou dropped the \033[93m" + item_name)
-    player.room.items.append(item)
-    player.remove_item(item)
-
-def show_inventory():
-  cprint("\nIn your loot bag you see:\n")
-  if len(player.items) == 0:
-    cprint("Nothing", "red")
-  else:
-    for item in player.items:
-      cprint("- \033[93m" + item.name)
-
+player = Player("Asher", rooms["outside"])
+actions = Actions(player)
 
 # def move_to(dir, cur_loc):
 #   attribute = dir + "_to"
@@ -165,16 +31,16 @@ def show_inventory():
 #     return cur_loc
 
 options = {
-  "n": north,
-  "s": south,
-  "e": east,
-  "w": west,
-  "?": list_commands,
-  "search": search,
-  "look": look,
-  "pickup": pickup,
-  "drop": drop,
-  "loot": show_inventory
+  "n": actions.north,
+  "s": actions.south,
+  "e": actions.east,
+  "w": actions.west,
+  "?": actions.list_commands,
+  "search": actions.search,
+  "look": actions.look,
+  "pickup": actions.pickup,
+  "drop": actions.drop,
+  "loot": actions.show_inventory
 }
 
 cash_needed_to_win = 10000
