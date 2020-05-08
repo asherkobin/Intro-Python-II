@@ -4,19 +4,9 @@ from player import Player
 from termcolor import colored, cprint
 from actions import Actions
 from rooms import rooms
-
+from inspect import signature
+import roomsetup
 import textwrap
-
-# Link rooms together
-
-rooms['outside'].n_to = rooms['foyer']
-rooms['foyer'].s_to = rooms['outside']
-rooms['foyer'].n_to = rooms['overlook']
-rooms['foyer'].e_to = rooms['narrow']
-rooms['overlook'].s_to = rooms['foyer']
-rooms['narrow'].w_to = rooms['foyer']
-rooms['narrow'].n_to = rooms['treasure']
-rooms['treasure'].s_to = rooms['narrow']
 
 player = Player("Asher", rooms["outside"])
 actions = Actions(player)
@@ -52,12 +42,16 @@ cprint(f"\n Welcome {player.name}.  The story so far... ", "white", attrs=['reve
 intro = """You have accumulated a sports gambling debt of $10,000.
  Your bookie is looking for you to collect his money.
  You must find the money needed within 24 hours.
- You decide to go on a dangerous adventure to find a way to pay your debt."""
+ You decide to explore an abandoned mine hoping to find anything of value to pay your debt."""
+
+hint = "\n" + colored("HINT: ", "white") + "When you pickup an item, you can learn more about it\n      (and discover possible clues) by " + colored("inspect", "green", attrs=["bold", "underline"]) + "ing the item."
 
 print()
 
 for line in textwrap.wrap(intro, 80):
   cprint(line, "cyan")
+
+cprint(hint)
 
 cprint("\nType '?' to list player commands")
 
@@ -69,18 +63,18 @@ while (True):
 
   decontructed_command = user_action.split(" ")
 
-  if (len(decontructed_command) == 2):    # pickup key
+  if (len(decontructed_command) == 2):    # eg: pickup key
     action = decontructed_command[0]
     subject = decontructed_command[1]
     function = None
     target = None
-  elif (len(decontructed_command) == 4):  # use key on door
+  elif (len(decontructed_command) == 4):  # eg: use key on door
     action = decontructed_command[0]
     subject = decontructed_command[1]
     function = decontructed_command[2]
     target = decontructed_command[3]
   else:
-    action = decontructed_command[0]      # search
+    action = decontructed_command[0]      # eg: search
     subject = None
 
   if (action == "q"):
@@ -89,7 +83,11 @@ while (True):
   try:
     if (subject is None):
       try:
-        options[action]()
+        fn_sig = signature(options[action])
+        if len(fn_sig.parameters) > 0:
+          cprint("\n" + action + " what?", "red")
+        else:
+          options[action]()
       except TypeError:
         cprint("\nCommand not recognized.  Type '?' for proper syntax.", "red")
     elif (function is None and target is None):

@@ -62,7 +62,7 @@ class Actions():
       cprint("\nNothing", "red")
     else:
       for item in self.player.room.items:
-        cprint("- \033[93m" + item.name)
+        print("- " + colored(item.name, "yellow"))
 
   def look(self):
     self.print_room_description()
@@ -75,8 +75,10 @@ class Actions():
         break
     if (found_item is None):
       cprint("\nThere is no " + item_name + " here.")
+    elif found_item.can_be_pickedup == False:
+      cprint("\nYou cannot pickup the " + colored(item_name, "yellow") + ".")
     else:
-      cprint("\nYou picked up the \033[93m" + item_name)
+      cprint("\nYou picked up the " + colored(item_name, "yellow") + ".")
       self.player.room.items.remove(item)
       self.player.add_item(item)
 
@@ -129,6 +131,6 @@ class Actions():
       if (found_target is None):
         cprint("\nThis room does not have a \033[93m" + target_name)
       elif (found_target.item_used_for == found_item.used_for):
-        cprint("\nWorked!", "green")
+        found_target.action()
       else:
         cprint("\nNo Effect", "magenta")
