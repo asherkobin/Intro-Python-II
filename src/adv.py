@@ -63,6 +63,24 @@ room['treasure'].s_to = room['narrow']
 
 player = Player("Asher", room["outside"])
 
+def list_commands():
+  cprint("""
+Movement Commands: n (north), s (south), e (east), w (west), q (quit)
+
+Room Commands:
+- look (describe your current location)
+- search (search your current location)
+
+Item Commands:
+- pickup [item_name] (pickup an item that you have found)
+- drop [item_name] (drop an item from your inventory)
+
+Inventory Commands:
+- loot (displays your inventory)
+- inspect [item_name] (inspect an item)
+- use [item_name] (use an item in your)""")
+
+
 def north():
   try:
     player.room = player.room.n_to
@@ -91,36 +109,51 @@ def west():
   except AttributeError:
     cprint("\n** Blocked **", "red")
 
-def list_commands():
-  cprint("""
-Movement Commands: n (north), s (south), e (east), w (west), q (quit)
-
-Room Commands:
-- look (describe your current location)
-- search (search your current location)
-
-Item Commands:
-- pickup [item_name] (pickup an item that you have found)
-- drop [item_name] (drop an item from your inventory)
-
-Inventory Commands:
-- i (displays your inventory)
-- inspect [item_name] (inspect an item)
-- use [item_name] (use an item in your)""")
-
 def search():
   cprint("\nYou search the area and see...", "white")
   if len(player.room.items) == 0:
-    cprint("Nothing", "red")
+    cprint("\nNothing", "red")
   else:
     for item in player.room.items:
-      cprint("- " + item.name, "yellow")
+      cprint("- \033[93m" + item.name)
 
 def look():
   print_room_description()
 
-def pickup(item):
-  print("you picked up " + item)
+def pickup(item_name):
+  found_item = None
+  for item in player.room.items:
+    if item.name == item_name:
+      found_item = item
+      break
+  if (found_item is None):
+    cprint("\nThere is no " + item_name + " here.")
+  else:
+    cprint("\nYou picked up the \033[93m" + item_name)
+    player.room.items.remove(item)
+    player.add_item(item)
+
+def drop(item_name):
+  found_item = None
+  for item in player.items:
+    if item.name == item_name:
+      found_item = item
+      break
+  if (found_item is None):
+    cprint("\nYou do not possess a \033[93m" + item_name)
+  else:
+    cprint("\nYou dropped the \033[93m" + item_name)
+    player.room.items.append(item)
+    player.remove_item(item)
+
+def show_inventory():
+  cprint("\nIn your loot bag you see:\n")
+  if len(player.items) == 0:
+    cprint("Nothing", "red")
+  else:
+    for item in player.items:
+      cprint("- \033[93m" + item.name)
+
 
 # def move_to(dir, cur_loc):
 #   attribute = dir + "_to"
@@ -139,7 +172,9 @@ options = {
   "?": list_commands,
   "search": search,
   "look": look,
-  "pickup": pickup
+  "pickup": pickup,
+  "drop": drop,
+  "loot": show_inventory
 }
 
 cash_needed_to_win = 10000
@@ -177,7 +212,10 @@ while (True):
     break
 
   try:
-    options[verb](subject)
+    if (subject is None):
+      options[verb]()
+    else:
+      options[verb](subject)
   except KeyError:
     print("\nInvalid Action: Type ? to get list of actions.")
 
