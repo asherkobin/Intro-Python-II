@@ -3,7 +3,9 @@ from item import Item
 
 items = {
   "rock":
-    Item("rock", "mysterious rune carvings surround the rock")
+    Item("rock", "Mysterious rune carvings surround the rock"),
+  "key":
+    Item("key", "An ordinary key for a padlock")
 }
 
 rooms = {
@@ -11,7 +13,7 @@ rooms = {
     Room(
       "Outside Cave Entrance",
       "North of you, the cave mount beckons",
-      [items["rock"]]),
+      [items["rock"], items["key"]]),
 
   "foyer":
     Room(

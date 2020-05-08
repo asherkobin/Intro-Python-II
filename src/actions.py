@@ -22,7 +22,7 @@ class Actions():
   Inventory Commands:
   - loot (displays your inventory)
   - inspect [item_name] (inspect an item)
-  - use [item_name] (use an item in your)""")
+  - use [item_name] on [target] (use an item on an object)""")
 
   def print_room_description(self):
     cprint(f"\nYou are in the {self.player.room.name}", "green") 
@@ -57,7 +57,7 @@ class Actions():
       cprint("\n** Blocked **", "red")
 
   def search(self):
-    cprint("\nYou search the area and see...", "white")
+    cprint("\nYou search the area and see...\n", "white")
     if len(self.player.room.items) == 0:
       cprint("\nNothing", "red")
     else:
@@ -94,9 +94,31 @@ class Actions():
       self.player.remove_item(item)
 
   def show_inventory(self):
-    cprint("\nIn your loot bag you see:\n")
+    cprint("\nIn your loot bag you have:\n")
     if len(self.player.items) == 0:
       cprint("Nothing", "red")
     else:
       for item in self.player.items:
         cprint("- \033[93m" + item.name)
+
+  def inspect(self, item_name):
+    found_item = None
+    for item in self.player.items:
+      if item.name == item_name:
+        found_item = item
+        break
+    if (found_item is None):
+      cprint("\nYou do not possess a \033[93m" + item_name)
+    else:
+      cprint("\n" + found_item.description, "magenta")
+
+  def use(self, item_name, function, target):
+    found_item = None
+    for item in self.player.items:
+      if item.name == item_name:
+        found_item = item
+        break
+    if (found_item is None):
+      cprint("\nYou do not possess a \033[93m" + item_name)
+    else:
+      cprint("\nNo Effect", "magenta")

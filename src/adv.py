@@ -40,7 +40,9 @@ options = {
   "look": actions.look,
   "pickup": actions.pickup,
   "drop": actions.drop,
-  "loot": actions.show_inventory
+  "loot": actions.show_inventory,
+  "inspect": actions.inspect,
+  "use": actions.use
 }
 
 cash_needed_to_win = 10000
@@ -63,27 +65,42 @@ cprint(f"\nYou are in the {player.room.name}", "green")
 cprint(player.room.description, "white")
 
 while (True):
-  action = input("\nAction: ")
+  user_action = input("\nAction: ")
 
-  decontructed_command = action.split(" ")
+  decontructed_command = user_action.split(" ")
 
-  if (len(decontructed_command) > 1):
-    verb = decontructed_command[0]
+  if (len(decontructed_command) == 2):    # pickup key
+    action = decontructed_command[0]
     subject = decontructed_command[1]
+    function = None
+    target = None
+  elif (len(decontructed_command) == 4):  # use key on door
+    action = decontructed_command[0]
+    subject = decontructed_command[1]
+    function = decontructed_command[2]
+    target = decontructed_command[3]
   else:
-    verb = decontructed_command[0]
+    action = decontructed_command[0]      # search
     subject = None
 
-  if (verb == "q"):
+  if (action == "q"):
     break
 
   try:
     if (subject is None):
-      options[verb]()
+      try:
+        options[action]()
+      except TypeError:
+        cprint("\nCommand not recognized.  Type '?' for proper syntax.", "red")
+    elif (function is None and target is None):
+      try:
+        options[action](subject)
+      except TypeError:
+        cprint(f"\n{action} {subject} on what?", "red")
     else:
-      options[verb](subject)
+      options[action](subject, function, target)
   except KeyError:
-    print("\nInvalid Action: Type ? to get list of actions.")
+    print("\nInvalid Action: Type '?' to get list of actions.")
 
 
 
