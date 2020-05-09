@@ -7,9 +7,16 @@ class Player():
     self.name = name
     self.room = room
     self.items = []
+    self.cash = 0
   
   def add_item(self, item):
     self.items.append(item)
 
   def remove_item(self, item):
     self.items.remove(item)
+
+  def add_cash(self, cash):
+    self.cash += cash
+
+  def get_cash_amount(self):
+    return self.cash

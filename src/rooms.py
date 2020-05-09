@@ -10,41 +10,65 @@ items = {
     Item("rusty-key", "The key looks like it hasn't been used in decades.", True),
   "dirt":
     Item("dirt", "", False),
-  "stone":
+  "mystic_stone":
     Item("stone", "Mysterious rune carvings surround the stone.", True),
-  "key_for_wooden_door":
-    Item("key", "An ordinary key for a padlock", True, "key_for_wooden_door")
+  "key_for_chest":
+    Item("key", "An ordinary key for a padlock", True, "key_for_chest")
 }
 
-def steel_grate_opened():
-  cprint("\nThe brick destroys the rusty lock and the grate is opened.", "magenta")
-  rooms["outside"].description = "North of you, the mine entrance is opened."
-  rooms["outside"].n_to = rooms["foyer"]
+def steel_grate_use_success(player, target):
+  if (target.opened == True):
+    cprint("\nThe steel-grate has already been broken open.")
+  else:
+    target.opened = True
+    target.locked = False
+    cprint("\nThe brick destroys the rusty lock and the steel-grate is opened.", "magenta")
+    rooms["outside"].description = "North of you, the mine entrance is opened."
+    rooms["outside"].n_to = rooms["mine-entrance"]
 
-def wooden_door_unlocked():
-  rooms['outside'].n_to = rooms['foyer']
+def steel_grate_use_fail(player, target):
+  cprint("\nThe steel-grate remains locked.", "magenta")
+
+def steel_grate_open_action(player, target):
+  if (target.opened == True):
+    cprint("\nThe steel-grate is already opened.")
+
+def chest_unlocked(player, target):
+  if (target.locked == False):
+    cprint("\nThe chest is already unlocked.")
+  else:
+    target.locked = False
+    cprint("\nYou unlocked the chest, unfortunately the chest was trapped and poison gas caused 10 damage.")
+
+def chest_opened(player, target):
+  if (target.opened == True):
+    cprint("\nThe chest is empty.")
+  else:
+    target.opened = True
+    cprint("\nYou find 100 twenty-dollar bills wrapped in a currency strap! $2000 is added to your loot bag.")
+    player.add_cash(2000)
 
 targets = {
   "steel-grate":
-    Target("steel-grate", "brick_for_steel_gate", steel_grate_opened),
-  "wooden-door":
-    Target("wooden-door", "key_for_wooden_door", wooden_door_unlocked)
+    Target("steel-grate", "brick_for_steel_gate", steel_grate_use_success, steel_grate_use_fail, steel_grate_open_action),
+  "chest":
+    Target("chest", "key_for_chest", chest_unlocked, None, chest_opened, True)
 }
 
 rooms = {
   "outside":
     Room(
       "Outside Mine Entrance",
-      "North of you, the mine entrance is blocked by a " + colored("steel-grate", "cyan") + colored(".", "white"),
+      "North of you, the mine entrance is blocked by a locked " + colored("steel-grate", "cyan") + colored(".", "white"),
       [items["rusty-key"], items["brick"], items["dirt"]],
       [targets["steel-grate"]]),
 
-  "foyer":
+  "mine-entrance":
     Room(
-      "Foyer",
-      "Dim light filters in from the south. Dusty passages run north and east.",
-      [items["key_for_wooden_door"]],
-      [targets["wooden-door"]]),
+      "Mine Entrance",
+      "The entrance is full of cobwebs and fallen stone",
+      [items["key_for_chest"], items["mystic_stone"]],
+      [targets["chest"]]),
 
   "overlook":
     Room(

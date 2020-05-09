@@ -8,7 +8,7 @@ from inspect import signature
 import roomsetup
 import textwrap
 
-player = Player("Asher", rooms["outside"])
+player = Player("Gambler", rooms["outside"])
 actions = Actions(player)
 
 # def move_to(dir, cur_loc):
@@ -32,12 +32,13 @@ options = {
   "drop": actions.drop,
   "loot": actions.show_inventory,
   "inspect": actions.inspect,
-  "use": actions.use
+  "use": actions.use,
+  "open": actions.open
 }
 
 cash_needed_to_win = 10000
 
-cprint(f"\n Welcome {player.name}.  The story so far... ", "white", attrs=['reverse'])
+cprint(f"\n Welcome {player.name}!  The story so far... ", "yellow", attrs=['reverse'])
 
 intro = """You have accumulated a sports gambling debt of $10,000.
  Your bookie is looking for you to collect his money.
@@ -81,25 +82,21 @@ while (True):
     break
 
   try:
+    fn_sig = signature(options[action])
     if (subject is None):
-      try:
-        fn_sig = signature(options[action])
-        if len(fn_sig.parameters) > 0:
-          cprint("\n" + action + " what?", "red")
-        else:
-          options[action]()
-      except TypeError:
-        cprint("\nCommand not recognized.  Type '?' for proper syntax.", "red")
+      if len(fn_sig.parameters) > 0:
+        cprint("\n" + action + " what?", "red")
+      else:
+        options[action]()
     elif (function is None and target is None):
-      try:
-        options[action](subject)
-      except TypeError:
-        cprint(f"\n{action} {subject} on what?", "red")
+      if len(fn_sig.parameters) == 0:
+        cprint("\nInvalid syntax.  Type '?' for proper usage.", "red")
+      else:
+        try:
+          options[action](subject)
+        except TypeError:
+          cprint(f"\n{action} {subject} on what?", "red")
     else:
       options[action](subject, function, target)
   except KeyError:
     print("\nInvalid Action: Type '?' to get list of actions.")
-
-
-
-
