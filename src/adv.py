@@ -1,51 +1,102 @@
+from item import Item
 from room import Room
+from player import Player
+from termcolor import colored, cprint
+from actions import Actions
+from rooms import rooms
+from inspect import signature
+import roomsetup
+import textwrap
 
-# Declare all the rooms
+player = Player("Gambler", rooms["outside"])
+actions = Actions(player)
 
-room = {
-    'outside':  Room("Outside Cave Entrance",
-                     "North of you, the cave mount beckons"),
+# def move_to(dir, cur_loc):
+#   attribute = dir + "_to"
 
-    'foyer':    Room("Foyer", """Dim light filters in from the south. Dusty
-passages run north and east."""),
+#   if hasattr(cur_loc, attribute):
+#     return getattr(cur_loc, attribute)
+#   else:
+#     print("Can't Go That Way!")
+#     return cur_loc
 
-    'overlook': Room("Grand Overlook", """A steep cliff appears before you, falling
-into the darkness. Ahead to the north, a light flickers in
-the distance, but there is no way across the chasm."""),
-
-    'narrow':   Room("Narrow Passage", """The narrow passage bends here from west
-to north. The smell of gold permeates the air."""),
-
-    'treasure': Room("Treasure Chamber", """You've found the long-lost treasure
-chamber! Sadly, it has already been completely emptied by
-earlier adventurers. The only exit is to the south."""),
+options = {
+  "n": actions.north,
+  "s": actions.south,
+  "e": actions.east,
+  "w": actions.west,
+  "?": actions.list_commands,
+  "search": actions.search,
+  "look": actions.look,
+  "pickup": actions.pickup,
+  "drop": actions.drop,
+  "loot": actions.show_inventory,
+  "inspect": actions.inspect,
+  "use": actions.use,
+  "open": actions.open
 }
 
+cash_needed_to_win = 10000
 
-# Link rooms together
+cprint(f"\n Welcome {player.name}!  The story so far... ", "yellow", attrs=['reverse'])
 
-room['outside'].n_to = room['foyer']
-room['foyer'].s_to = room['outside']
-room['foyer'].n_to = room['overlook']
-room['foyer'].e_to = room['narrow']
-room['overlook'].s_to = room['foyer']
-room['narrow'].w_to = room['foyer']
-room['narrow'].n_to = room['treasure']
-room['treasure'].s_to = room['narrow']
+intro = """You have accumulated a sports gambling debt of $10,000.
+ Your bookie is looking for you to collect his money.
+ You must find the money needed within 24 hours.
+ You decide to explore an abandoned mine hoping to find anything of value to pay your debt."""
 
-#
-# Main
-#
+hint = "\n" + colored("HINT: ", "white") + "When you pickup an item, you can learn more about it\n      (and discover possible clues) by " + colored("inspect", "green", attrs=["bold", "underline"]) + "ing the item."
 
-# Make a new player object that is currently in the 'outside' room.
+print()
 
-# Write a loop that:
-#
-# * Prints the current room name
-# * Prints the current description (the textwrap module might be useful here).
-# * Waits for user input and decides what to do.
-#
-# If the user enters a cardinal direction, attempt to move to the room there.
-# Print an error message if the movement isn't allowed.
-#
-# If the user enters "q", quit the game.
+for line in textwrap.wrap(intro, 80):
+  cprint(line, "cyan")
+
+cprint(hint)
+
+cprint("\nType '?' to list player commands")
+
+cprint(f"\nYou are in the {player.room.name}", "green") 
+cprint(player.room.description, "white")
+
+while (True):
+  user_action = input("\nAction: ")
+
+  decontructed_command = user_action.split(" ")
+
+  if (len(decontructed_command) == 2):    # eg: pickup key
+    action = decontructed_command[0]
+    subject = decontructed_command[1]
+    function = None
+    target = None
+  elif (len(decontructed_command) == 4):  # eg: use key on door
+    action = decontructed_command[0]
+    subject = decontructed_command[1]
+    function = decontructed_command[2]
+    target = decontructed_command[3]
+  else:
+    action = decontructed_command[0]      # eg: search
+    subject = None
+
+  if (action == "q"):
+    break
+
+  try:
+    fn_sig = signature(options[action])
+    if (subject is None):
+      if len(fn_sig.parameters) > 0:
+        cprint("\n" + action + " what?", "red")
+      else:
+        options[action]()
+    elif (function is None and target is None):
+      if len(fn_sig.parameters) == 0:
+        cprint("\nInvalid syntax.  Type '?' for proper usage.", "red")
+      else:
+        try:
+          options[action](subject)
+        except TypeError:
+          cprint(f"\n{action} {subject} on what?", "red")
+    else:
+      options[action](subject, function, target)
+  except KeyError:
+    print("\nInvalid Action: Type '?' to get list of actions.")
